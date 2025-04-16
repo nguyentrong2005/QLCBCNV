@@ -57,6 +57,7 @@ namespace QLCBCNV
             cbxBuoi.SelectedIndexChanged += cbxBuoi_SelectedIndexChanged;
             cbxKhoi.SelectedIndexChanged += cbxKhoi_SelectedIndexChanged;
             dtpNgayDay.ValueChanged += dtpNgayDay_ValueChanged;
+            txtTong.Text = (dgvPhanCong.Rows.Count - 1).ToString();
         }
         private void LoadColor()
         {
@@ -135,25 +136,25 @@ namespace QLCBCNV
         }
         private void LoadKhoi()
         {
-            var khoiData = new DataTable();
-            khoiData.Columns.Add("KhoiLop");
+            string query = "SELECT DISTINCT LEFT(TenLop, 2) AS Khoi FROM LopHoc ORDER BY Khoi ASC";
+            DataTable dt = db.ExecuteQuery(query);
 
-            khoiData.Rows.Add("10");
-            khoiData.Rows.Add("11");
-            khoiData.Rows.Add("12");
-
-            cbxKhoi.DataSource = khoiData;
-            cbxKhoi.DisplayMember = "KhoiLop";
-            cbxKhoi.ValueMember = "KhoiLop";
+            cbxKhoi.DataSource = dt;
+            cbxKhoi.DisplayMember = "Khoi";
+            cbxKhoi.ValueMember = "Khoi";
             cbxKhoi.DropDownStyle = ComboBoxStyle.DropDownList;
             cbxKhoi.SelectedIndex = -1;
         }
         private void LoadLop()
         {
             string query = "SELECT MaLop, TenLop FROM LopHoc ORDER BY TenLop ASC";
-            allLopTable = db.ExecuteQuery(query);
+            DataTable dt = db.ExecuteQuery(query);
 
-            FilterLopByKhoi();
+            cbxLop.DataSource = dt;
+            cbxLop.DisplayMember = "TenLop";
+            cbxLop.ValueMember = "MaLop";
+            cbxLop.DropDownStyle = ComboBoxStyle.DropDownList;
+            cbxLop.SelectedIndex = -1;
         }
         private void LoadGiaoVien()
         {
@@ -180,52 +181,17 @@ namespace QLCBCNV
         private void LoadThu()
         {
             var thu = (int)dtpNgayDay.Value.DayOfWeek;
-            string[] thuText = { "Chủ nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7" };
+            string[] thuText = { "Chủ nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy" };
             txtThu.Text = thuText[thu];
 
             txtThu.ReadOnly = true;
         }
         private void LoadPhanCongGiangDay()
         {
-            string query = @"
-                SELECT 
-                    pc.MaPC,
-                    gv.HoTen AS GiaoVien,
-                    mh.TenMonHoc AS MonHoc,
-                    lh.TenLop AS Lop,
-                    CAST(hknh.HocKy AS VARCHAR) + ' - (' + CAST(hknh.NamHoc AS VARCHAR) + ')' AS HocKyNam,  -- Sửa ở đây
-                    pc.NgayDay,
-                    CASE pc.ThuTrongTuan
-                        WHEN 2 THEN N'Thứ 2'
-                        WHEN 3 THEN N'Thứ 3'
-                        WHEN 4 THEN N'Thứ 4'
-                        WHEN 5 THEN N'Thứ 5'
-                        WHEN 6 THEN N'Thứ 6'
-                        WHEN 7 THEN N'Thứ 7'
-                        WHEN 8 THEN N'Chủ nhật'
-                    END AS Thu,
-                    pc.Tiet,
-                    pc.SoTiet
-                FROM PhanCongGiangDay pc
-                INNER JOIN GiaoVien gv ON pc.MaGV = gv.MaGV
-                INNER JOIN MonHoc mh ON pc.MaMonHoc = mh.MaMonHoc
-                INNER JOIN LopHoc lh ON pc.MaLop = lh.MaLop
-                INNER JOIN HocKyNamHoc hknh ON pc.MaHKNH = hknh.MaHKNH
-            ";
+            string query = "SELECT * FROM PhanCongGiangDay";
 
             DataTable dt = db.ExecuteQuery(query);
-
-            if (dt.Rows.Count > 0)
-            {
-                dgvPhanCong.DataSource = dt;
-                dgvPhanCong.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-                dgvPhanCong.ReadOnly = true;
-                dgvPhanCong.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            }
-            else
-            {
-                MessageBox.Show("Không có dữ liệu để hiển thị.");
-            }
+            dgvPhanCong.DataSource = dt;
         }
         private void Lock(bool locked)
         {
@@ -233,6 +199,7 @@ namespace QLCBCNV
             cbxLop.Enabled = false;
             txtThu.Enabled = false;
             txtMaPC.Enabled = false;
+            txtTong.Enabled = false;
             dtpNgayDay.Checked = false;
 
             cbxKy.Enabled = !locked;
@@ -242,6 +209,8 @@ namespace QLCBCNV
             cbxGiaoVien.Enabled = !locked;
             cbxMonHoc.Enabled = !locked;
             dtpNgayDay.Enabled = !locked;
+
+            txtTong.Text = (dgvPhanCong.Rows.Count - 1).ToString();
 
             if (locked)
             {
@@ -289,15 +258,15 @@ namespace QLCBCNV
         }
         private void FilterLopByKhoi()
         {
-            if (cbxKhoi.SelectedItem == null || allLopTable == null) return;
+            if (cbxKhoi.SelectedItem == null) return;
 
             string selectedKhoi = cbxKhoi.SelectedValue?.ToString();
             if (string.IsNullOrEmpty(selectedKhoi)) return;
 
-            DataView dv = new DataView(allLopTable);
-            dv.RowFilter = $"TenLop LIKE '{selectedKhoi}%'";
+            string query = $"SELECT MaLop, TenLop FROM LopHoc WHERE TenLop LIKE '{selectedKhoi}%' ORDER BY TenLop ASC";
+            DataTable dt = db.ExecuteQuery(query);
 
-            cbxLop.DataSource = dv;
+            cbxLop.DataSource = dt;
             cbxLop.DisplayMember = "TenLop";
             cbxLop.ValueMember = "MaLop";
             cbxLop.DropDownStyle = ComboBoxStyle.DropDownList;
@@ -614,35 +583,43 @@ namespace QLCBCNV
                 txtMaPC.Text = row.Cells["MaPC"]?.Value?.ToString() ?? "";
 
                 // GiaoVien
-                if (row.Cells["GiaoVien"].Value != null)
-                    cbxGiaoVien.Text = row.Cells["GiaoVien"].Value.ToString();
+                if (row.Cells["MaGV"].Value != null)
+                    cbxGiaoVien.SelectedValue = row.Cells["MaGV"].Value.ToString();
                 else
                     cbxGiaoVien.SelectedIndex = -1;
 
                 // MonHoc
-                if (row.Cells["MonHoc"].Value != null)
-                    cbxMonHoc.Text = row.Cells["MonHoc"].Value.ToString();
+                if (row.Cells["MaMonHoc"].Value != null)
+                    cbxMonHoc.SelectedValue = row.Cells["MaMonHoc"].Value.ToString();
                 else
                     cbxMonHoc.SelectedIndex = -1;
 
                 // Lop
-                if (row.Cells["Lop"].Value != null)
+                if (row.Cells["MaLop"].Value != null)
                 {
-                    string lop = row.Cells["Lop"].Value.ToString();
-                    string khoi = lop.Length >= 2 ? lop.Substring(0, 2) : "";
+                    string maLop = row.Cells["MaLop"].Value.ToString();
 
-                    int index = cbxKhoi.FindStringExact(khoi);
-                    if (index != -1)
-                    {
-                        cbxKhoi.SelectedIndex = index;
-                    }
-                    else
-                    {
-                        cbxKhoi.SelectedIndex = -1;
-                    }
+                    string query = $"SELECT TenLop FROM LopHoc WHERE MaLop = '{maLop}'";
+                    DataTable dtLop = db.ExecuteQuery(query);
 
-                    cbxLop.Text = lop;
-                    cbxLop.Enabled = false;
+                    if (dtLop.Rows.Count > 0)
+                    {
+                        string tenLop = dtLop.Rows[0]["TenLop"].ToString();
+
+                        string khoi = tenLop.Length >= 2 ? tenLop.Substring(0, 2) : "";
+
+                        if (!string.IsNullOrEmpty(khoi))
+                        {
+                            cbxKhoi.SelectedValue = khoi;
+                        }
+                        else
+                        {
+                            cbxKhoi.SelectedIndex = -1;
+                        }
+
+                        cbxLop.SelectedValue = maLop;
+                        cbxLop.Enabled = false;
+                    }
                 }
                 else
                 {
@@ -651,8 +628,8 @@ namespace QLCBCNV
                 }
 
                 // HocKyNam
-                if (row.Cells["HocKyNam"].Value != null)
-                    cbxKy.Text = row.Cells["HocKyNam"].Value.ToString();
+                if (row.Cells["MaHKNH"].Value != null)
+                    cbxKy.SelectedValue = row.Cells["MaHKNH"].Value.ToString();
                 else
                     cbxKy.SelectedIndex = -1;
 
@@ -663,7 +640,35 @@ namespace QLCBCNV
                     dtpNgayDay.Value = DateTime.Now;
 
                 // Thu
-                txtThu.Text = row.Cells["Thu"]?.Value?.ToString() ?? "";
+                if (row.Cells["ThuTrongTuan"].Value != null)
+                {
+                    int thuSo;
+                    if (int.TryParse(row.Cells["ThuTrongTuan"].Value.ToString(), out thuSo))
+                    {
+                        string thuChu = "";
+                        switch (thuSo)
+                        {
+                            case 2: thuChu = "Thứ Hai"; break;
+                            case 3: thuChu = "Thứ Ba"; break;
+                            case 4: thuChu = "Thứ Tư"; break;
+                            case 5: thuChu = "Thứ Năm"; break;
+                            case 6: thuChu = "Thứ Sáu"; break;
+                            case 7: thuChu = "Thứ Bảy"; break;
+                            case 8: thuChu = "Chủ Nhật"; break; // hoặc dùng 1
+                            default: thuChu = "Không xác định"; break;
+                        }
+
+                        txtThu.Text = thuChu;
+                    }
+                    else
+                    {
+                        txtThu.Text = "";
+                    }
+                }
+                else
+                {
+                    txtThu.Text = "";
+                }
 
                 // Tiet
                 if (row.Cells["Tiet"].Value != null)
