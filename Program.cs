@@ -14,9 +14,10 @@ namespace QLCBCNV
         [STAThread]
         static void Main()
         {
+            bool isAdmin = false;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmPhanCongGiangDay());
+            Application.Run(new frmPhanCongGiangDay(isAdmin));
         }
     }
 }

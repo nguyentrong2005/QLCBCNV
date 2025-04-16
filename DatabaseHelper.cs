@@ -1,74 +1,117 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data.SqlClient;
 
-namespace QLCBCNV
+namespace QLTH_BTNhom
 {
-    public static class DatabaseHelper
+    internal class DatabaseHelper
     {
-        // Chuỗi kết nối đến SQL Server
-        private static readonly string connectionString = @"Server=.;Database=QLCBCNV;Integrated Security=True";
-
-        // Thực thi câu lệnh SELECT (trả về DataTable)
-        public static DataTable ExecuteQuery(string query, SqlParameter[] parameters = null, bool isStoredProcedure = false)
+        public bool TestConnection()
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlConnection conn = GetConnection())
                 {
-                    if (isStoredProcedure)
-                        cmd.CommandType = CommandType.StoredProcedure;
-
-                    if (parameters != null)
-                        cmd.Parameters.AddRange(parameters);
-
-                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                    DataTable dt = new DataTable();
-                    adapter.Fill(dt);
-                    return dt;
+                    conn.Open();
+                    Console.WriteLine("✅ Kết nối SQL Server thành công!");
+                    return true;
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Lỗi kết nối: " + ex.Message);
+                return false;
             }
         }
 
-        // Thực thi INSERT, UPDATE, DELETE (trả về số dòng bị ảnh hưởng)
-        public static int ExecuteNonQuery(string query, SqlParameter[] parameters = null, bool isStoredProcedure = false)
+        private string connectionString;
+
+        // Constructor cho phép dùng chuỗi kết nối mặc định hoặc tùy chỉnh
+        public DatabaseHelper(string connStr = "Server=.;Database=QLCBCNV;Integrated Security=True")
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            connectionString = connStr;
+        }
+
+        // Mở kết nối SQL
+        private SqlConnection GetConnection()
+        {
+            return new SqlConnection(connectionString);
+        }
+
+        // Thực thi lệnh INSERT, UPDATE, DELETE
+        public int ExecuteNonQuery(string query, SqlParameter[] parameters = null)
+        {
+            try
             {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlConnection conn = GetConnection())
                 {
-                    if (isStoredProcedure)
-                        cmd.CommandType = CommandType.StoredProcedure;
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        if (parameters != null)
+                            cmd.Parameters.AddRange(parameters);
 
-                    if (parameters != null)
-                        cmd.Parameters.AddRange(parameters);
-
-                    return cmd.ExecuteNonQuery();
+                        return cmd.ExecuteNonQuery();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi SQL: " + ex.Message);
+                return -1; // Trả về -1 nếu có lỗi
             }
         }
 
-        // Thực thi câu lệnh trả về một giá trị đơn lẻ (COUNT, SUM, MAX, MIN, ...)
-        public static object ExecuteScalar(string query, SqlParameter[] parameters = null, bool isStoredProcedure = false)
+        // Trả về giá trị đơn (ví dụ: COUNT(*))
+        public object ExecuteScalar(string query, SqlParameter[] parameters = null)
         {
-            using (SqlConnection conn = new SqlConnection(connectionString))
+            try
             {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlConnection conn = GetConnection())
                 {
-                    if (isStoredProcedure)
-                        cmd.CommandType = CommandType.StoredProcedure;
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        if (parameters != null)
+                            cmd.Parameters.AddRange(parameters);
 
-                    if (parameters != null)
-                        cmd.Parameters.AddRange(parameters);
-
-                    return cmd.ExecuteScalar();
+                        return cmd.ExecuteScalar();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi SQL: " + ex.Message);
+                return null;
+            }
+        }
+
+        // Trả về bảng dữ liệu (SELECT)
+        public DataTable ExecuteQuery(string query, SqlParameter[] parameters = null)
+        {
+            try
+            {
+                using (SqlConnection conn = GetConnection())
+                {
+                    conn.Open();
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        if (parameters != null)
+                            cmd.Parameters.AddRange(parameters);
+
+                        using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                        {
+                            DataTable dt = new DataTable();
+                            adapter.Fill(dt);
+                            return dt;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Lỗi SQL: " + ex.Message);
+                return null;
             }
         }
     }

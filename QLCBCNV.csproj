@@ -47,43 +47,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DatabaseHelper.cs" />
+    <Compile Include="frmHelper.cs" />
     <Compile Include="frmPhanCongGiangDay.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmPhanCongGiangDay.Designer.cs">
       <DependentUpon>frmPhanCongGiangDay.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmQuanLyGiaoVien.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmQuanLyGiaoVien.Designer.cs">
-      <DependentUpon>frmQuanLyGiaoVien.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmQuanLyMonHoc.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmQuanLyMonHoc.Designer.cs">
-      <DependentUpon>frmQuanLyMonHoc.cs</DependentUpon>
-    </Compile>
-    <Compile Include="frmQuanLyTrinhDo.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmQuanLyTrinhDo.Designer.cs">
-      <DependentUpon>frmQuanLyTrinhDo.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="frmPhanCongGiangDay.resx">
       <DependentUpon>frmPhanCongGiangDay.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmQuanLyGiaoVien.resx">
-      <DependentUpon>frmQuanLyGiaoVien.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmQuanLyMonHoc.resx">
-      <DependentUpon>frmQuanLyMonHoc.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmQuanLyTrinhDo.resx">
-      <DependentUpon>frmQuanLyTrinhDo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
