@@ -134,6 +134,11 @@ namespace QLCBCNV
 
             DataTable dt = db.ExecuteQuery(query);
             dgvTinhLuong.DataSource = dt;
+
+            dgvTinhLuong.Columns["HeSoLuong"].DefaultCellStyle.Format = "N2";
+            dgvTinhLuong.Columns["MucLuongCoSo"].DefaultCellStyle.Format = "N0";
+            dgvTinhLuong.Columns["TongPhuCap"].DefaultCellStyle.Format = "N0";
+            dgvTinhLuong.Columns["TongLuong"].DefaultCellStyle.Format = "N0";
         }
         private void cbxNam_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -445,10 +450,17 @@ namespace QLCBCNV
 
                 cbxNam.SelectedValue = Convert.ToInt32(row.Cells["Nam"].Value);
 
-                txtHeSoLuong.Text = row.Cells["HeSoLuong"].Value?.ToString();
-                txtMucLuongCoSo.Text = row.Cells["MucLuongCoSo"].Value?.ToString();
-                txtTongPhuCap.Text = row.Cells["TongPhuCap"].Value?.ToString();
-                txtTongLuong.Text = row.Cells["TongLuong"].Value?.ToString();
+                decimal hs = Convert.ToDecimal(row.Cells["HeSoLuong"].Value);
+                txtHeSoLuong.Text = hs.ToString("F2");
+
+                decimal luongCoSo = Convert.ToDecimal(row.Cells["MucLuongCoSo"].Value);
+                txtMucLuongCoSo.Text = luongCoSo.ToString("N0");
+
+                decimal phuCap = Convert.ToDecimal(row.Cells["TongPhuCap"].Value);
+                txtTongPhuCap.Text = phuCap.ToString("N0");
+
+                decimal tongLuong = Convert.ToDecimal(row.Cells["TongLuong"].Value);
+                txtTongLuong.Text = tongLuong.ToString("N0");
             }
         }
     }

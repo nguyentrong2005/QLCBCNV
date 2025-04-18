@@ -17,7 +17,7 @@ namespace QLCBCNV
             bool isAdmin = false;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmTinhLuong(isAdmin));
+            Application.Run(new frmGiaoVien(isAdmin));
         }
     }
 }
